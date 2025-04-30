@@ -3,10 +3,10 @@ Proyecto de graficos por computadora, Una aplicación que carga y renderiza mode
 
 # Paqueteria necesaria:
 
-'''
+```
 pip install pyqt 
-'''
+```
 
-'''
+```
 pip install vtk 
-'''
+```
