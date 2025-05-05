@@ -12,6 +12,16 @@ os.environ["QT_QPA_PLATFORM"] = "xcb" # Comentar esta linea si da problemas en w
 # https://examples.vtk.org/site/Python/Widgets/CameraOrientationWidget/
 # https://stackoverflow.com/questions/61304532/how-to-show-alpha-channel-in-pyqt5-qcolordialog
 # https://examples.vtk.org/site/Python/ImplicitFunctions/ImplicitSphere1/
+# https://examples.vtk.org/site/Python/Rendering/PBR_Materials/
+# https://examples.vtk.org/site/Python/Rendering/PBR_Materials_Coat/
+# https://examples.vtk.org/site/Python/Rendering/PBR_HDR_Environment/
+# https://vtk.org/doc/nightly/html/classvtkOpenGLProperty.html
+# https://www.thingiverse.com/
+
+# https://polyhaven.com/
+# https://ambientcg.com/
+# https://polygon.love/orm/
+
 
 # https://www.artec3d.com/3d-models/stl
 
@@ -42,14 +52,14 @@ class MainWindow(QtWidgets.QMainWindow):
         # Barra de herramientas superior para controles de cámara
         toolbar_top = QtWidgets.QHBoxLayout()
         
+        self.current_view_index = 0
+
         # Botones de control de cámara
         camera_controls = [
-            ("Vista Superior", lambda: top_view(self.renderer, self.vtk_widget)),
-            ("Vista Inferior", lambda: bottom_view(self.renderer, self.vtk_widget)),
-            ("Vista Frontal", lambda: front_view(self.renderer, self.vtk_widget)),
-            ("Vista Lateral", lambda: side_view(self.renderer, self.vtk_widget)),
-            ("45°", lambda: rotate_view(self.renderer, self.vtk_widget, self.current_actor, 45)),
-            ("90°", lambda: rotate_view(self.renderer, self.vtk_widget, self.current_actor, 90)),
+            ("Alternar Vista", lambda: cycle_views(self)),
+            ("45° x", lambda: rotate_view(self.renderer, self.vtk_widget, self.current_actor, 45,0,0)),
+            ("45° y", lambda: rotate_view(self.renderer, self.vtk_widget, self.current_actor, 0,45,0)),
+            ("45° z", lambda: rotate_view(self.renderer, self.vtk_widget, self.current_actor, 0,0,45)),
             ("Eliminar Modelo", lambda: setattr(self, 'current_actor', remove_model(self.renderer, self.vtk_widget, self.texture, self.current_mapper, self.current_actor, self.texture_coords)))
         ]
         
@@ -64,14 +74,17 @@ class MainWindow(QtWidgets.QMainWindow):
         # Widget VTK
         self.vtk_widget = QVTKRenderWindowInteractor(central_widget)
         layout.addWidget(self.vtk_widget)
+
+        self.current_texture_index = 0
+        self.current_background_index = 0
         
         # Barra de herramientas inferior para operaciones
         toolbar_bottom = QtWidgets.QHBoxLayout()
         operations = [
-            ("Cargar STL", lambda: setattr(self, 'current_actor', load_stl(self.renderer, self.vtk_widget, self.texture, self.current_mapper, self.current_actor, self.texture_coords))),
-            ("Cargar Imagen", lambda: setattr(self, 'current_actor', load_image(self.renderer, self.vtk_widget, self.texture, self.current_mapper, self.current_actor, self.texture_coords))),
-            ("Cargar Textura", lambda: load_texture(self.renderer, self.vtk_widget, self.current_actor)),
-            ("Color Fondo", lambda: set_background_color(self.renderer, self.vtk_widget)), 
+            ("Cargar STL", lambda: setattr(self, 'current_actor', load_stl(self, self.renderer, self.vtk_widget, self.texture, self.current_mapper, self.current_actor, self.texture_coords))),
+            ("Cargar Imagen", lambda: load_texture(self.renderer, self.vtk_widget, self.current_actor)),
+            ("Alternar Textura", lambda: cycle_texture(self, self.renderer, self.vtk_widget, self.current_actor)),
+            ("Alternar Fondo", lambda: cycle_background(self, self.current_actor)),
             ("Color Figura", lambda: set_actor_color(self.renderer, self.vtk_widget, self.current_actor, self.texture_coords, self.current_mapper)),
             ("Reiniciar textura", lambda: clear_texture(self.renderer, self.vtk_widget, self.current_actor, self.texture_coords, self.current_mapper)),
             ("Visualizar Mesh", lambda: set_mesh_visible(self.renderer, self.vtk_widget, self.current_actor, self.texture_coords, self.current_mapper))
@@ -103,6 +116,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Inicialización diferida
         QtCore.QTimer.singleShot(100, self.finalize_vtk_setup)
+
+        # Configurar iluminación ambiental
+        #setup_environment_lighting(self)
 
     def finalize_vtk_setup(self):
         self.vtk_widget.GetRenderWindow().Render()

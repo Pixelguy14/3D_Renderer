@@ -33,7 +33,7 @@ def side_view(renderer, vtk_widget):
     renderer.ResetCamera()
     vtk_widget.GetRenderWindow().Render()
 
-def rotate_view(renderer, vtk_widget, current_actor, angle):
+def rotate_view(renderer, vtk_widget, current_actor, angleAzimuth, angleElevation, AngleRoll):
     if not current_actor:
         return
     
@@ -43,10 +43,11 @@ def rotate_view(renderer, vtk_widget, current_actor, angle):
     
     # Rotar la cámara
     cam = renderer.GetActiveCamera()
-    cam.Azimuth(angle)
+    cam.Azimuth(angleAzimuth)
+    cam.Elevation(angleElevation)
+    cam.Roll(AngleRoll)
     renderer.ResetCameraClippingRange()  # Ajusta el rango de clipping de la cámara
     vtk_widget.GetRenderWindow().Render()
-
 
 def remove_model(renderer, vtk_widget, texture, current_mapper, current_actor, texture_coords):
     if current_actor:
@@ -73,3 +74,14 @@ def remove_model(renderer, vtk_widget, texture, current_mapper, current_actor, t
         current_actor = None
 
     return current_actor
+
+def cycle_views(self):
+    self.view_cycle_functions = [
+            lambda: top_view(self.renderer, self.vtk_widget),
+            lambda: bottom_view(self.renderer, self.vtk_widget),
+            lambda: front_view(self.renderer, self.vtk_widget),
+            lambda: side_view(self.renderer, self.vtk_widget)
+        ]
+    current_function = self.view_cycle_functions[self.current_view_index]
+    current_function()
+    self.current_view_index = (self.current_view_index + 1) % len(self.view_cycle_functions)
