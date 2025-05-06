@@ -41,6 +41,7 @@ def load_stl(self, renderer, vtk_widget, texture, current_mapper, current_actor,
     renderer.AddActor(current_actor)
     renderer.ResetCamera()
     vtk_widget.GetRenderWindow().Render()
+    self.status_label = QtWidgets.QLabel("Modelo Cargado")
     return current_actor  # Devuelve el actor actualizado
 
 def load_texture(self, vtk_widget, current_actor):
